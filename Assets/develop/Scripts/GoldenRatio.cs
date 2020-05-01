@@ -14,6 +14,11 @@ public class GoldenRatio : MonoBehaviour
 	public float pow = 1f;
 	public float speed = 0.0001f;
 	public float powSpeed = 0f;
+	public float period=0f;
+	public float offsetPeriod;
+	public float dstArg=1f;
+	[SerializeField]
+	private float pow2;
 	// Start is called before sthe first frame update
 	void Start()
 	{
@@ -22,6 +27,7 @@ public class GoldenRatio : MonoBehaviour
 		for (int i = 0; i < numPoints; i++)
 		{
 			plotList.Add(Instantiate(prefab, new Vector3(), Quaternion.identity, transform) as GameObject);
+			plotList[i].transform.localScale = prefab.transform.localScale;
 		}
 	}
 
@@ -30,19 +36,29 @@ public class GoldenRatio : MonoBehaviour
 	{
 		currentTime += Time.deltaTime;
 		bool calcFlag = false;
-		if (currentTime > 0.01f)
+		if (currentTime > 0.016666f)
 		{
 			calcFlag = true;
 			currentTime = 0f;
+
 		}
 		//Calc
 		if (calcFlag)
 		{
 			turnFraction += speed;
 			pow += powSpeed;
+
+			pow2 = 0f;
+			if (period > 0)
+			{
+				pow2 = SinWave() * pow;
+			}else{
+				pow2 = pow;
+			}
+
 			for (int i = 0; i < numPoints; i++)
 			{
-				float dst = Mathf.Clamp(Mathf.Pow(i / (numPoints - 1f) * dnum, pow), 0f, 99999999999999f);
+				float dst = Mathf.Clamp(Mathf.Pow(i / (numPoints - 1f) * dnum, pow2)*dstArg, 0f, 99999999999999f);
 				float angle = 2 * Mathf.PI * turnFraction * i;
 
 				float x = dst * Mathf.Cos(angle);
@@ -58,6 +74,11 @@ public class GoldenRatio : MonoBehaviour
 		Vector3 vec = plotList[plotNum].transform.position;
 		vec.x = x;
 		vec.y = y;
-		plotList[plotNum].transform.position = vec;
+		plotList[plotNum].transform.localPosition = new Vector3(x,y);
+	}
+
+	private float SinWave(){
+		float result = Mathf.Sin(2f*Mathf.PI * 1f/period * Time.time+Mathf.PI*offsetPeriod);	
+		return result;
 	}
 }
